@@ -10,9 +10,9 @@ export const AppDataSource = new DataSource({
   password: process.env.TYPEORM_PASSWORD,
   database: process.env.TYPEORM_DATABASE,
   entities: [
-    // process.env.NODE_ENV === 'production'
-    //   ? 'dist/**/**/entities/*.entity.js'
-    //   : 'src/**/**/entities/*.entity.ts',
+    process.env.NODE_ENV === 'production'
+      ? 'dist/**/**/entities/*.entity.js'
+      : 'src/**/**/entities/*.entity.ts',
   ],
   migrations: [
     process.env.NODE_ENV === 'production'
