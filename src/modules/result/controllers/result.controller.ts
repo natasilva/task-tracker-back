@@ -7,9 +7,9 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ResultService } from './result.service';
-import { CreateResultDto } from './dto/create-result.dto';
-import { UpdateResultDto } from './dto/update-result.dto';
+import { ResultService } from '../services/result.service';
+import { CreateResultDto } from '../dto/create-result.dto';
+import { UpdateResultDto } from '../dto/update-result.dto';
 
 @Controller('result')
 export class ResultController {

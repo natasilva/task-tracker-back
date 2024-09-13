@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateResultDto } from './dto/create-result.dto';
-import { UpdateResultDto } from './dto/update-result.dto';
+import { CreateResultDto } from '../dto/create-result.dto';
+import { UpdateResultDto } from '../dto/update-result.dto';
 
 @Injectable()
 export class ResultService {
