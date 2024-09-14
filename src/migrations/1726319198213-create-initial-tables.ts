@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateInitialTables1726238585400 implements MigrationInterface {
-  name = 'CreateInitialTables1726238585400';
+export class CreateInitialTables1726319198213 implements MigrationInterface {
+  name = 'CreateInitialTables1726319198213';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -15,6 +15,9 @@ export class CreateInitialTables1726238585400 implements MigrationInterface {
     );
     await queryRunner.query(
       `CREATE TABLE "user" ("id" SERIAL NOT NULL, "name" character varying NOT NULL, "cpf" character varying NOT NULL, "password" character varying NOT NULL, "is_admin" boolean NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "target" ("id" SERIAL NOT NULL, "name" character varying NOT NULL, "description" character varying, "type" character varying NOT NULL, "service_key" character varying NOT NULL, "extra_service_key" character varying NOT NULL, "service_category" character varying NOT NULL, "value" integer NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_9d962204b13c18851ea88fc72f3" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `ALTER TABLE "service_result" ADD CONSTRAINT "FK_f8ef848451f853b17db46cd5f86" FOREIGN KEY ("id_result") REFERENCES "result"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -37,6 +40,7 @@ export class CreateInitialTables1726238585400 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "service_result" DROP CONSTRAINT "FK_f8ef848451f853b17db46cd5f86"`,
     );
+    await queryRunner.query(`DROP TABLE "target"`);
     await queryRunner.query(`DROP TABLE "user"`);
     await queryRunner.query(`DROP TABLE "result"`);
     await queryRunner.query(`DROP TABLE "service_result"`);
