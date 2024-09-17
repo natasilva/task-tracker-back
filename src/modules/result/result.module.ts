@@ -6,14 +6,16 @@ import { Result } from './entities/result.entity';
 import { ServiceResult } from './entities/service-result.entity';
 import { Service } from './entities/service.entity';
 import { UserModule } from '../user/user.module';
+import { ServiceService } from './services/service.service';
+import { ServiceController } from './controllers/service.controller';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Result, ServiceResult, Service]),
     forwardRef(() => UserModule),
   ],
-  controllers: [ResultController],
-  providers: [ResultService],
+  controllers: [ResultController, ServiceController],
+  providers: [ResultService, ServiceService],
   exports: [TypeOrmModule],
 })
 export class ResultModule {}
