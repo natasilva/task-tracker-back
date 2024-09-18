@@ -19,16 +19,16 @@ export class Target {
   @Column()
   type: string;
 
-  @Column()
+  @Column({ nullable: true })
   service_key: string;
 
-  @Column()
+  @Column({ nullable: true })
   extra_service_key: string;
 
-  @Column()
+  @Column({ nullable: true })
   service_category: string;
 
-  @Column()
+  @Column({ type: 'float' })
   value: number;
 
   @CreateDateColumn({ type: 'timestamp' })
