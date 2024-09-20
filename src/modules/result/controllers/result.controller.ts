@@ -6,12 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ResultService } from '../services/result.service';
 import { CreateResultDto } from '../dto/create-result.dto';
 import { UpdateResultDto } from '../dto/update-result.dto';
+import { FindAllResultDto } from '../dto/find-all-result.dto';
 
-@Controller('result')
+@Controller('results')
 export class ResultController {
   constructor(private readonly resultService: ResultService) {}
 
@@ -21,8 +23,8 @@ export class ResultController {
   }
 
   @Get()
-  findAll() {
-    return this.resultService.findAll();
+  findAll(@Query() findAllResultDto: FindAllResultDto) {
+    return this.resultService.findAll(findAllResultDto);
   }
 
   @Get(':id')

@@ -7,6 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ServiceResult } from '../entities/service-result.entity';
 import { CreateServiceResultDto } from '../dto/create-service-result.dto';
 import { User } from '../../user/entities/user.entity';
+import { UpdateServiceResultDto } from '../dto/update-service-result.dto';
+import { FindAllResultDto } from '../dto/find-all-result.dto';
 
 @Injectable()
 export class ResultService {
@@ -50,16 +52,61 @@ export class ResultService {
     return { ...savedResult, serviceResults };
   }
 
-  findAll() {
-    return `This action returns all result`;
+  async findAll(findAllResultDto: FindAllResultDto) {
+    const query = `
+      WITH date_range AS (
+        SELECT generate_series(
+          $1::date, 
+          $2::date, 
+          '1 day'
+          )::date AS validation_date
+          ), mytb AS (
+            SELECT * 
+            FROM result 
+            WHERE DATE(validation_date) BETWEEN $1 AND $2
+            )
+            SELECT r.*, d.validation_date
+            FROM date_range d
+        LEFT JOIN mytb r ON DATE(r.validation_date) = d.validation_date;
+    `;
+
+    const values = [
+      findAllResultDto.initialDate
+        ? new Date(findAllResultDto.initialDate)
+        : new Date(new Date().setDate(new Date().getDate() - 9)),
+      findAllResultDto.endDate
+        ? new Date(findAllResultDto.endDate)
+        : new Date(),
+    ];
+
+    try {
+      const results = await this.resultRepository.query(query, values);
+      return results;
+    } catch (err) {
+      throw new Error(`Error to find results: ${err}`);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} result`;
+  async findOne(id: number) {
+    const result = await this.resultRepository.findOne({
+      where: { id },
+      relations: { service_results: { service: true }, user: true },
+    });
+
+    return result;
   }
 
-  update(id: number, updateResultDto: UpdateResultDto) {
-    return `This action updates a #${id} result`;
+  async update(id: number, updateResultDto: UpdateResultDto) {
+    // Salva cada service-result que foi passado
+    const serviceResults: ServiceResult[] = await Promise.all(
+      updateResultDto.service_results.map(
+        async (serviceResultDto: UpdateServiceResultDto) => {
+          return this.serviceResultRepository.save(serviceResultDto);
+        },
+      ),
+    );
+
+    return serviceResults;
   }
 
   remove(id: number) {

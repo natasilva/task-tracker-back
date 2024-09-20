@@ -1,4 +1,5 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateResultDto } from './create-result.dto';
+import { UpdateServiceResultDto } from './update-service-result.dto';
 
-export class UpdateResultDto extends PartialType(CreateResultDto) {}
+export class UpdateResultDto {
+  service_results: Array<UpdateServiceResultDto>;
+}
