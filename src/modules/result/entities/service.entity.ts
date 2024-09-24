@@ -15,16 +15,7 @@ export class Service {
   key: string;
 
   @Column()
-  category: string;
-
-  @Column()
-  has_ar: boolean;
-
-  @Column()
-  has_vd: boolean;
-
-  @Column()
-  has_packaging: boolean;
+  category_type: string;
 
   @Column({ type: 'int', default: 0 })
   sequence: number;

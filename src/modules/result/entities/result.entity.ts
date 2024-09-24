@@ -8,9 +8,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   Unique,
-  UpdateDateColumn,
 } from 'typeorm';
-import { ServiceResult } from './service-result.entity';
+import { ResultCategory } from './result-category.entity';
 
 @Entity('result')
 @Unique(['user', 'validation_date'])
@@ -21,8 +20,8 @@ export class Result {
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', onUpdate: 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
+  // @UpdateDateColumn({ type: 'timestamp', onUpdate: 'CURRENT_TIMESTAMP' })
+  // updated_at: Date;
 
   @Column({ unique: true })
   validation_date: Date;
@@ -31,6 +30,6 @@ export class Result {
   @JoinColumn({ name: 'id_user' })
   user: User;
 
-  @OneToMany(() => ServiceResult, (service_result) => service_result.result)
-  service_results: ServiceResult[];
+  @OneToMany(() => ResultCategory, (result_category) => result_category.result)
+  result_categories: ResultCategory[];
 }
