@@ -1,22 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { CreateResultDto } from '../dto/create-result.dto';
 import { UpdateResultDto } from '../dto/update-result.dto';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Result } from '../entities/result.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ServiceResult } from '../entities/service-result.entity';
-import { CreateServiceResultDto } from '../dto/create-service-result.dto';
+import { CreateCategoryServiceDto } from '../dto/create-category-service.dto';
 import { User } from '../../user/entities/user.entity';
-import { UpdateServiceResultDto } from '../dto/update-service-result.dto';
+import { UpdateResultCategoryDto } from '../dto/update-result-category.dto';
 import { FindAllResultDto } from '../dto/find-all-result.dto';
+import { CategoryService } from '../entities/category-service.entity';
+import { ResultCategory } from '../entities/result-category.entity';
+import { CreateResultCategoryDto } from '../dto/create-result-category.dto';
+import { UpdateCategoryServiceDto } from '../dto/update-category-service.dto';
 
 @Injectable()
 export class ResultService {
   constructor(
     @InjectRepository(Result) private resultRepository: Repository<Result>,
     @InjectRepository(User) private userRepository: Repository<User>,
-    @InjectRepository(ServiceResult)
-    private serviceResultRepository: Repository<ServiceResult>,
+    @InjectRepository(CategoryService)
+    private categoryServiceRepository: Repository<CategoryService>,
+    @InjectRepository(ResultCategory)
+    private resultCategoryRepository: Repository<ResultCategory>,
+    private dataSource: DataSource,
   ) {}
 
   async create(createResultDto: CreateResultDto) {
@@ -28,28 +34,57 @@ export class ResultService {
       throw new Error('User not found');
     }
 
-    const result = this.resultRepository.create({
-      user: user,
-      validation_date: createResultDto.validation_date,
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.startTransaction();
 
-    const savedResult = await this.resultRepository.save(result);
+    try {
+      const result = this.resultRepository.create({
+        user: user,
+        validation_date: createResultDto.validation_date,
+      });
 
-    const serviceResults: ServiceResult[] = await Promise.all(
-      createResultDto.service_results.map(
-        async (serviceResultDto: CreateServiceResultDto) => {
-          const serviceResult = this.serviceResultRepository.create({
-            ...serviceResultDto,
-            result: savedResult,
-            service: { id: serviceResultDto.id_service },
-          });
+      const savedResult = await queryRunner.manager.save(result);
 
-          return this.serviceResultRepository.save(serviceResult);
-        },
-      ),
-    );
+      const categories = await Promise.all(
+        createResultDto.result_categories.map(
+          async (createResultCategoryDto: CreateResultCategoryDto) => {
+            const services = [...createResultCategoryDto.services];
+            delete createResultCategoryDto.services;
+            const result_category = this.resultCategoryRepository.create({
+              ...createResultCategoryDto,
+              result: { id: savedResult.id },
+            });
 
-    return { ...savedResult, serviceResults };
+            await queryRunner.manager.save(result_category);
+
+            await Promise.all(
+              services.map(
+                async (createCategoryServiceDto: CreateCategoryServiceDto) => {
+                  const service = this.categoryServiceRepository.create({
+                    result_category,
+                    quantity: createCategoryServiceDto.quantity,
+                    service: { id: createCategoryServiceDto.id_service },
+                  });
+
+                  await queryRunner.manager.save(service);
+                },
+              ),
+            );
+
+            return result_category;
+          },
+        ),
+      );
+
+      await queryRunner.commitTransaction();
+
+      return { ...savedResult, categories };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async findAll(findAllResultDto: FindAllResultDto) {
@@ -90,23 +125,98 @@ export class ResultService {
   async findOne(id: number) {
     const result = await this.resultRepository.findOne({
       where: { id },
-      relations: { service_results: { service: true }, user: true },
+      relations: {
+        result_categories: { category_services: { service: true } },
+        user: true,
+      },
     });
 
     return result;
   }
 
   async update(id: number, updateResultDto: UpdateResultDto) {
-    // Salva cada service-result que foi passado
-    const serviceResults: ServiceResult[] = await Promise.all(
-      updateResultDto.service_results.map(
-        async (serviceResultDto: UpdateServiceResultDto) => {
-          return this.serviceResultRepository.save(serviceResultDto);
-        },
-      ),
-    );
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.startTransaction();
 
-    return serviceResults;
+    try {
+      const result = await this.findOne(id);
+
+      if (!result) {
+        throw new Error('Result not found');
+      }
+
+      const categories = await Promise.all(
+        updateResultDto.result_categories.map(
+          async (updateResultCategoryDto: UpdateResultCategoryDto) => {
+            let result_category: ResultCategory;
+
+            const services = [...updateResultCategoryDto.services];
+            delete updateResultCategoryDto.services;
+
+            if (updateResultCategoryDto.id) {
+              result_category = await this.resultCategoryRepository.findOne({
+                where: { id: updateResultCategoryDto.id },
+              });
+
+              if (!result_category) {
+                throw new Error(
+                  `Category with ID ${updateResultCategoryDto.id} not found`,
+                );
+              }
+
+              Object.assign(result_category, updateResultCategoryDto);
+              await queryRunner.manager.save(result_category);
+            } else {
+              result_category = this.resultCategoryRepository.create({
+                ...updateResultCategoryDto,
+                result: { id: result.id },
+              });
+              await queryRunner.manager.save(result_category);
+            }
+            await Promise.all(
+              services.map(
+                async (updateCategoryServiceDto: UpdateCategoryServiceDto) => {
+                  let category_service: CategoryService;
+
+                  if (updateCategoryServiceDto.id) {
+                    category_service =
+                      await this.categoryServiceRepository.findOne({
+                        where: { id: updateCategoryServiceDto.id },
+                      });
+
+                    if (!category_service) {
+                      throw new Error(
+                        `Service with ID ${updateCategoryServiceDto.id} not found`,
+                      );
+                    }
+
+                    Object.assign(category_service, updateCategoryServiceDto);
+                    await queryRunner.manager.save(category_service);
+                  } else {
+                    category_service = this.categoryServiceRepository.create({
+                      result_category,
+                      quantity: updateCategoryServiceDto.quantity,
+                      service: { id: updateCategoryServiceDto.id_service },
+                    });
+                    await queryRunner.manager.save(category_service);
+                  }
+                },
+              ),
+            );
+            return result_category;
+          },
+        ),
+      );
+
+      await queryRunner.commitTransaction();
+
+      return categories;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   remove(id: number) {

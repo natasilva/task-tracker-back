@@ -1,5 +1,9 @@
-import { UpdateServiceResultDto } from './update-service-result.dto';
-
+import { UpdateResultCategoryDto } from './update-result-category.dto';
+import { ValidateNested, IsArray } from 'class-validator';
+import { Type } from 'class-transformer';
 export class UpdateResultDto {
-  service_results: Array<UpdateServiceResultDto>;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateResultCategoryDto)
+  result_categories: Array<UpdateResultCategoryDto>;
 }
