@@ -10,10 +10,7 @@ export class ServiceService {
   ) {}
 
   async findAll() {
-    const services = await this.ServiceRepository.find({
-      order: { sequence: 'desc' },
-    });
-
+    const services = await this.ServiceRepository.find();
     return services;
   }
 

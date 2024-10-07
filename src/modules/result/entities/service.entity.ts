@@ -14,12 +14,9 @@ export class Service {
   @Column({ unique: true })
   key: string;
 
-  @Column()
-  category_type: string;
+  @Column({ type: 'enum', enum: ['objeto', 'carta'] })
+  category: string;
 
-  @Column({ type: 'int', default: 0 })
-  sequence: number;
-
-  //   @OneToMany(() => ServiceResult, (service_result) => service_result.service)
-  //   service_results: ServiceResult[];
+  @Column({ type: 'enum', enum: ['envio', 'extra'] })
+  type: string;
 }

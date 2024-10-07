@@ -7,17 +7,11 @@ import { Service } from './entities/service.entity';
 import { UserModule } from '../user/user.module';
 import { ServiceService } from './services/service.service';
 import { ServiceController } from './controllers/service.controller';
-import { ResultCategory } from './entities/result-category.entity';
-import { CategoryService } from './entities/category-service.entity';
+import { Item } from './entities/item.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Result,
-      ResultCategory,
-      CategoryService,
-      Service,
-    ]),
+    TypeOrmModule.forFeature([Result, Service, Item]),
     forwardRef(() => UserModule),
   ],
   controllers: [ResultController, ServiceController],

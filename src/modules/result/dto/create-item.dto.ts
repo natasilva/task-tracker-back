@@ -1,6 +1,6 @@
 import { IsNumber } from 'class-validator';
 
-export class CreateCategoryServiceDto {
+export class CreateItemDto {
   @IsNumber()
   id_service: number;
 

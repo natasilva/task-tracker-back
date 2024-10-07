@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { ResultCategory } from './result-category.entity';
+import { Item } from './item.entity';
 
 @Entity('result')
 @Unique(['user', 'validation_date'])
@@ -20,16 +20,13 @@ export class Result {
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
-  // @UpdateDateColumn({ type: 'timestamp', onUpdate: 'CURRENT_TIMESTAMP' })
-  // updated_at: Date;
-
   @Column({ unique: true })
   validation_date: Date;
 
-  @ManyToOne(() => User, (user) => user.results)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'id_user' })
   user: User;
 
-  @OneToMany(() => ResultCategory, (result_category) => result_category.result)
-  result_categories: ResultCategory[];
+  @OneToMany(() => Item, (item) => item.result)
+  items: Item[];
 }

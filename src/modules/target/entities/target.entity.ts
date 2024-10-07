@@ -1,9 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('target')
 export class Target {
@@ -20,17 +15,14 @@ export class Target {
   type: string;
 
   @Column({ nullable: true })
-  service_key: string;
+  first_service: string;
 
   @Column({ nullable: true })
-  extra_service_key: string;
+  second_service: string;
 
   @Column({ nullable: true })
   service_category: string;
 
   @Column({ type: 'float' })
   value: number;
-
-  @CreateDateColumn({ type: 'timestamp' })
-  created_at: Date;
 }

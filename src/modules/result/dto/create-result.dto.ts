@@ -1,6 +1,6 @@
 import { IsArray, IsDate, IsNumber, ValidateNested } from 'class-validator';
-import { CreateResultCategoryDto } from './create-result-category.dto';
 import { Type } from 'class-transformer';
+import { CreateItemDto } from './create-item.dto';
 
 export class CreateResultDto {
   @IsNumber()
@@ -11,6 +11,6 @@ export class CreateResultDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateResultCategoryDto)
-  result_categories: Array<CreateResultCategoryDto>;
+  @Type(() => CreateItemDto)
+  items: Array<CreateItemDto>;
 }
