@@ -1,42 +1,22 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { TargetService } from '../services/target.service';
-import { CreateTargetDto } from '../dto/create-target.dto';
-import { UpdateTargetDto } from '../dto/update-target.dto';
+import { GetReportDto } from '../dto/get-report.dto';
 
-@Controller('target')
+@Controller('targets')
 export class TargetController {
   constructor(private readonly targetService: TargetService) {}
-
-  @Post()
-  create(@Body() createTargetDto: CreateTargetDto) {
-    return this.targetService.create(createTargetDto);
-  }
 
   @Get()
   findAll() {
     return this.targetService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.targetService.findOne(+id);
-  }
+  @Get('/report')
+  getReport(@Query() getReportDto: GetReportDto) {
+    if (!getReportDto || !getReportDto.id_user) {
+      throw new BadRequestException('The id_user parameter is required.');
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTargetDto: UpdateTargetDto) {
-    return this.targetService.update(+id, updateTargetDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.targetService.remove(+id);
+    return this.targetService.getReport(getReportDto);
   }
 }
