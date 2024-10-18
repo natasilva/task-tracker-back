@@ -10,7 +10,7 @@ import { UserService } from '../services/user.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from '../dto/login-dto';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
