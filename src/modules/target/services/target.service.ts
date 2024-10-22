@@ -54,6 +54,7 @@ export class TargetService {
           target_tb.value targetValue,
           trunc((target_tb.first_qtd * 100 / target_tb.second_qtd)::numeric, 2)::float achievedValue
       from target_tb
+      order by name
     `;
 
     const values: Array<number | Date> = [id_user];
