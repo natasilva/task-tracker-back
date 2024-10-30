@@ -6,4 +6,7 @@ export class FindAllResultDto {
 
   @Optional()
   endDate: string;
+
+  @Optional()
+  registered: string;
 }

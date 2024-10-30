@@ -74,9 +74,13 @@ export class ResultService {
             FROM result 
             WHERE DATE(validation_date) BETWEEN $1 AND $2
             )
-            SELECT r.*, d.validation_date
-            FROM date_range d
-        LEFT JOIN mytb r ON DATE(r.validation_date) = d.validation_date;
+          select * from
+            (
+              SELECT d.validation_date, r.*
+              FROM date_range d
+              LEFT JOIN mytb r ON DATE(r.validation_date) = d.validation_date
+            ) as res
+          ${findAllResultDto.registered == 'true' ? 'where res.id is not null' : ''};
     `;
 
     const values = [
