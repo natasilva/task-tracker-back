@@ -34,7 +34,7 @@ export class ResultService {
     try {
       const result = this.resultRepository.create({
         user: user,
-        validation_date: createResultDto.validation_date,
+        validation_date: new Date(createResultDto.validation_date),
       });
 
       const savedResult = await queryRunner.manager.save(result);
@@ -76,19 +76,28 @@ export class ResultService {
             )
           select * from
             (
-              SELECT d.validation_date, r.*
+              SELECT r.id, r.created_at, r.id_user, d.validation_date
               FROM date_range d
               LEFT JOIN mytb r ON DATE(r.validation_date) = d.validation_date
             ) as res
-          ${findAllResultDto.registered == 'true' ? 'where res.id is not null' : ''};
+          ${findAllResultDto.registered == 'true' ? 'where res.id is not null' : ''}
+          order by res.validation_date desc;
     `;
 
     const values = [
       findAllResultDto.initialDate
-        ? new Date(findAllResultDto.initialDate)
+        ? new Date(
+            new Date(findAllResultDto.initialDate).setDate(
+              new Date(findAllResultDto.initialDate).getDate() + 1,
+            ),
+          )
         : new Date(new Date().setDate(new Date().getDate() - 9)),
       findAllResultDto.endDate
-        ? new Date(findAllResultDto.endDate)
+        ? new Date(
+            new Date(findAllResultDto.endDate).setDate(
+              new Date(findAllResultDto.endDate).getDate() + 1,
+            ),
+          )
         : new Date(),
     ];
 
